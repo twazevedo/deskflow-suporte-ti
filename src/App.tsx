@@ -38,6 +38,7 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'board' | 'lab'>('board');
   const [isNewTicketModalOpen, setIsNewTicketModalOpen] = useState(false);
   const [isRecruiterModalOpen, setIsRecruiterModalOpen] = useState(false);
+  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
   const [selectedTicketForDetail, setSelectedTicketForDetail] = useState<Ticket | null>(null);
   const [undoCount, setUndoCount] = useState(0);
   const [redoCount, setRedoCount] = useState(0);
@@ -844,6 +845,7 @@ export const App: React.FC = () => {
         onRedo={handleRedo}
         onOpenNewTicketModal={() => setIsNewTicketModalOpen(true)}
         onOpenRecruiterModal={() => setIsRecruiterModalOpen(true)}
+        onOpenAIChat={() => setIsAIChatOpen(true)}
         onInjectSimulatedTickets={handleInjectSimulatedTickets}
         onResetDemo={handleResetDemo}
         onExportReport={handleExportReport}
@@ -946,6 +948,9 @@ export const App: React.FC = () => {
         queueTickets={queueTickets}
         priorityQueueTickets={priorityQueueTickets}
         resolvedTickets={resolvedTickets}
+        isOpenExternal={isAIChatOpen}
+        onCloseExternal={() => setIsAIChatOpen(false)}
+        onToggleExternal={() => setIsAIChatOpen((prev) => !prev)}
       />
 
       {/* Notificações Flutuantes (Toasts) */}

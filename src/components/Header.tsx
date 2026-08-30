@@ -1,4 +1,3 @@
-import React from 'react';
 import { 
   Layers, 
   Undo2, 
@@ -15,7 +14,8 @@ import {
   Download,
   Play,
   Pause,
-  Activity
+  Activity,
+  Bot
 } from 'lucide-react';
 import { soundManager } from '../utils/sound';
 
@@ -27,6 +27,7 @@ interface HeaderProps {
   onRedo: () => void;
   onOpenNewTicketModal: () => void;
   onOpenRecruiterModal: () => void;
+  onOpenAIChat?: () => void;
   onInjectSimulatedTickets: () => void;
   onResetDemo: () => void;
   onExportReport: () => void;
@@ -46,6 +47,7 @@ export const Header: React.FC<HeaderProps> = ({
   onRedo,
   onOpenNewTicketModal,
   onOpenRecruiterModal,
+  onOpenAIChat,
   onInjectSimulatedTickets,
   onResetDemo,
   onExportReport,
@@ -230,6 +232,16 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             <span className="hidden lg:inline">+ Carga</span>
+          </button>
+
+          {/* AI Auto-Service Button */}
+          <button
+            onClick={onOpenAIChat}
+            title="Abrir Agente Virtual de Autoatendimento com IA (Triage & Reset Automático)"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-950 bg-gradient-to-r from-teal-400 to-cyan-400 hover:from-teal-300 hover:to-cyan-300 rounded-2xl shadow-lg shadow-teal-500/20 transition-all hover:scale-[1.03] active:scale-95 border border-teal-200/40"
+          >
+            <Bot className="w-4 h-4 text-slate-950" />
+            <span>Autoatendimento IA</span>
           </button>
 
           {/* New Incident */}

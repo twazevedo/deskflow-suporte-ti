@@ -36,6 +36,9 @@ interface AICopilotChatProps {
   queueTickets: Ticket[];
   priorityQueueTickets: Ticket[];
   resolvedTickets: Ticket[];
+  isOpenExternal?: boolean;
+  onCloseExternal?: () => void;
+  onToggleExternal?: () => void;
 }
 
 export const AICopilotChat: React.FC<AICopilotChatProps> = ({
@@ -43,8 +46,14 @@ export const AICopilotChat: React.FC<AICopilotChatProps> = ({
   queueTickets,
   priorityQueueTickets,
   resolvedTickets,
+  isOpenExternal,
+  onCloseExternal,
+  onToggleExternal,
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isOpen = isOpenExternal !== undefined ? isOpenExternal : internalIsOpen;
+  const toggleOpen = onToggleExternal || (() => setInternalIsOpen((prev) => !prev));
+  const closeOpen = onCloseExternal || (() => setInternalIsOpen(false));
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -282,21 +291,21 @@ export const AICopilotChat: React.FC<AICopilotChatProps> = ({
     <>
       {/* Botão Flutuante de Autoatendimento AI (Canto Inferior Direito) */}
       <button
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={toggleOpen}
         aria-label="Abrir Autoatendimento com IA"
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-slate-950 font-bold text-xs rounded-full shadow-2xl shadow-emerald-500/30 hover:scale-105 active:scale-95 transition-all duration-200 border border-emerald-300/40 group"
+        className="fixed bottom-6 right-6 z-[9999] flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 text-slate-950 font-bold text-xs rounded-full shadow-2xl shadow-emerald-500/50 hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-emerald-200 group cursor-pointer"
       >
         <div className="relative">
           <Bot className="w-5 h-5 text-slate-950 group-hover:rotate-12 transition-transform" />
-          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-300 animate-ping" />
+          <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-900 animate-ping" />
           <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-950 border border-emerald-300" />
         </div>
-        <span className="hidden sm:inline font-mono">DeskFlow AI • Autoatendimento</span>
+        <span className="font-mono text-slate-950 font-extrabold tracking-tight">DeskFlow AI • Autoatendimento</span>
       </button>
 
       {/* Janela de Chat Interativo */}
       {isOpen && (
-        <div className="fixed bottom-20 right-4 sm:right-6 z-50 w-[92vw] sm:w-[420px] h-[580px] bg-slate-950/95 border border-slate-800 rounded-3xl shadow-2xl backdrop-blur-2xl flex flex-col overflow-hidden animate-fade-in ring-1 ring-emerald-500/30">
+        <div className="fixed bottom-20 right-4 sm:right-6 z-[9999] w-[92vw] sm:w-[420px] h-[580px] bg-slate-950/95 border-2 border-emerald-500/40 rounded-3xl shadow-2xl backdrop-blur-2xl flex flex-col overflow-hidden animate-fade-in">
           
           {/* Top Bar */}
           <div className="p-4 border-b border-slate-800/80 bg-slate-900/90 flex items-center justify-between">
@@ -322,7 +331,7 @@ export const AICopilotChat: React.FC<AICopilotChatProps> = ({
 
             <div className="flex items-center gap-1">
               <button
-                onClick={() => setIsOpen(false)}
+                onClick={closeOpen}
                 className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors"
               >
                 <Minimize2 className="w-4 h-4" />
