@@ -1,0 +1,171 @@
+import { Ticket } from '../types/ticket';
+import { Agent } from '../types/agent';
+
+export const INITIAL_AGENTS: Agent[] = [
+  {
+    id: 'agent-1',
+    name: 'Ana Costa',
+    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+    role: 'Nível 1 - Suporte Ágil',
+    specialty: ['Acessos', 'Hardware', 'Windows'],
+    status: 'available',
+    currentTicketId: null,
+    resolvedCount: 14,
+    totalHandlingTimeMs: 4200000,
+  },
+  {
+    id: 'agent-2',
+    name: 'Carlos Oliveira',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+    role: 'Nível 2 - Sistemas & Cloud',
+    specialty: ['Software', 'ERP/SAP', 'Bancos de Dados'],
+    status: 'available',
+    currentTicketId: null,
+    resolvedCount: 9,
+    totalHandlingTimeMs: 3800000,
+  },
+  {
+    id: 'agent-3',
+    name: 'Roberto Mendes',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    role: 'Nível 3 - Infra & Redes',
+    specialty: ['Redes/VPN', 'Segurança', 'Servidores'],
+    status: 'available',
+    currentTicketId: null,
+    resolvedCount: 6,
+    totalHandlingTimeMs: 5100000,
+  },
+];
+
+export const INITIAL_TICKETS: Ticket[] = [
+  {
+    id: 'TICK-101',
+    title: 'Falha Geral na Conexão VPN Matriz',
+    description: 'Colaboradores em home office reportam erro de handshake TLS ao tentar conectar no túnel IPsec.',
+    requester: {
+      name: 'Juliana Paes',
+      email: 'juliana.paes@empresa.com.br',
+      department: 'Operações & Vendas',
+      isVip: true,
+    },
+    priority: 'critical',
+    priorityLevel: 1,
+    category: 'network',
+    status: 'queued',
+    createdAt: Date.now() - 1000 * 60 * 12, // 12 mins ago
+    slaMinutes: 15,
+    tags: ['VPN', 'HomeOffice', 'Firewall'],
+  },
+  {
+    id: 'TICK-102',
+    title: 'Suspeita de Phishing Direcionado no E-mail da Diretoria',
+    description: 'E-mail falso solicitando aprovação bancária urgente recebido com domínio similar ao do CEO.',
+    requester: {
+      name: 'Marcos Vasconcelos',
+      email: 'marcos.v@empresa.com.br',
+      department: 'Diretoria Financeira',
+      isVip: true,
+    },
+    priority: 'critical',
+    priorityLevel: 1,
+    category: 'security',
+    status: 'queued',
+    createdAt: Date.now() - 1000 * 60 * 8, // 8 mins ago
+    slaMinutes: 15,
+    tags: ['Segurança', 'Phishing', 'VIP'],
+  },
+  {
+    id: 'TICK-103',
+    title: 'Lentidão e Timeout no Módulo de Faturamento SAP',
+    description: 'Emissão de notas fiscais travando a cada 3 requisições com código DB_TIMEOUT_408.',
+    requester: {
+      name: 'Renata Albuquerque',
+      email: 'renata.a@empresa.com.br',
+      department: 'Contabilidade',
+    },
+    priority: 'high',
+    priorityLevel: 2,
+    category: 'software',
+    status: 'queued',
+    createdAt: Date.now() - 1000 * 60 * 25, // 25 mins ago
+    slaMinutes: 60,
+    tags: ['SAP', 'Faturamento', 'ERP'],
+  },
+  {
+    id: 'TICK-104',
+    title: 'Bloqueio de Senha e MFA do Active Directory',
+    description: 'Usuário errou token MFA após troca de aparelho corporativo e conta foi bloqueada no domínio.',
+    requester: {
+      name: 'Gabriel Martins',
+      email: 'gabriel.m@empresa.com.br',
+      department: 'Recursos Humanos',
+    },
+    priority: 'medium',
+    priorityLevel: 3,
+    category: 'access',
+    status: 'queued',
+    createdAt: Date.now() - 1000 * 60 * 45, // 45 mins ago
+    slaMinutes: 180,
+    tags: ['MFA', 'ActiveDirectory', 'Reset'],
+  },
+  {
+    id: 'TICK-105',
+    title: 'Troca de Teclado Mecânico com Tecla Espaço Danificada',
+    description: 'Equipamento de edição de vídeo com defeito físico na barra de espaço.',
+    requester: {
+      name: 'Lucas Brandão',
+      email: 'lucas.b@empresa.com.br',
+      department: 'Marketing & Criação',
+    },
+    priority: 'low',
+    priorityLevel: 4,
+    category: 'hardware',
+    status: 'queued',
+    createdAt: Date.now() - 1000 * 60 * 110, // 110 mins ago
+    slaMinutes: 480,
+    tags: ['Periféricos', 'Hardware'],
+  },
+];
+
+export const TICKET_TEMPLATES: Array<Omit<Ticket, 'id' | 'createdAt' | 'status'>> = [
+  {
+    title: 'Queda de Servidor de Banco de Dados de Produção',
+    description: 'Cluster PostgreSQL parou de responder conexões na porta 5432.',
+    requester: { name: 'Monitoramento Zabbix', email: 'noc@empresa.com.br', department: 'DevOps' },
+    priority: 'critical',
+    priorityLevel: 1,
+    category: 'infrastructure',
+    slaMinutes: 15,
+    tags: ['Postgres', 'Prod', 'Critical'],
+  },
+  {
+    title: 'Acesso Liberado para Novo Colaborador (Onboarding)',
+    description: 'Configuração de e-mail, permissões em pastas de rede e Google Workspace.',
+    requester: { name: 'Priscila Dias', email: 'priscila.d@empresa.com.br', department: 'RH' },
+    priority: 'medium',
+    priorityLevel: 3,
+    category: 'access',
+    slaMinutes: 180,
+    tags: ['Onboarding', 'Workspace'],
+  },
+  {
+    title: 'Instalação de Docker Desktop e Node.js no Mac',
+    description: 'Solicitação de permissão de administrador temporário para instalação de ferramentas dev.',
+    requester: { name: 'Felipe Santana', email: 'felipe.s@empresa.com.br', department: 'Engenharia' },
+    priority: 'medium',
+    priorityLevel: 3,
+    category: 'software',
+    slaMinutes: 180,
+    tags: ['DevTools', 'Docker'],
+  },
+  {
+    title: 'Cabo de Rede Rompido na Sala de Reunião B',
+    description: 'Tomada RJ-45 da mesa central sem conectividade com switch do andar 3.',
+    requester: { name: 'Camila Rocha', email: 'camila.r@empresa.com.br', department: 'Facilities' },
+    priority: 'low',
+    priorityLevel: 4,
+    category: 'network',
+    slaMinutes: 480,
+    tags: ['Cabeamento', 'SalaReuniao'],
+  },
+];
