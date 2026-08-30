@@ -168,13 +168,14 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="hidden xl:inline">Exportar CSV</span>
           </button>
 
-          {/* Recruiter Pitch Button */}
+          {/* Architecture Docs Button */}
           <button
             onClick={onOpenRecruiterModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-2xl transition-all hover:scale-[1.02] active:scale-95 shadow-sm"
+            title="Visualizar especificação técnica e decisões de arquitetura"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 rounded-2xl transition-all hover:scale-[1.02] active:scale-95 shadow-sm"
           >
-            <Briefcase className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden sm:inline">Guia do Recrutador</span>
+            <Briefcase className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden sm:inline">Docs de Arquitetura</span>
           </button>
 
           {/* Undo / Stack Action */}

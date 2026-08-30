@@ -114,7 +114,7 @@ DeskFlow Architecture
 
 ---
 
-## 💡 Perguntas Frequentes em Entrevistas Técnicas
+## 💡 Fundamentos & Perguntas de Engenharia de Software
 
 <details>
 <summary><strong>❓ Por que implementar uma Lista Encadeada em vez de usar Array.shift()?</strong></summary>
