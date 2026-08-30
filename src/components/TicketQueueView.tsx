@@ -4,7 +4,8 @@ import {
   PRIORITY_MAP, 
   CATEGORY_MAP, 
   TicketPriority,
-  TicketCategory
+  TicketCategory,
+  SupportTier
 } from '../types/ticket';
 import { 
   Clock, 
@@ -23,7 +24,9 @@ import {
   HelpCircle,
   Search,
   SlidersHorizontal,
-  Info
+  Info,
+  MapPin,
+  Building2
 } from 'lucide-react';
 
 interface TicketQueueViewProps {
@@ -58,6 +61,7 @@ export const TicketQueueView: React.FC<TicketQueueViewProps> = ({
   const [viewMode, setViewMode] = useState<'priority' | 'fifo'>('priority');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedTier, setSelectedTier] = useState<string>('all');
 
   const sourceTickets = viewMode === 'priority' ? priorityQueueTickets : tickets;
 
@@ -69,21 +73,15 @@ export const TicketQueueView: React.FC<TicketQueueViewProps> = ({
         t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         t.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         t.requester.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.requester.department.toLowerCase().includes(searchQuery.toLowerCase());
+        t.requester.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (t.tags && t.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())));
 
       const matchesCategory = selectedCategory === 'all' || t.category === selectedCategory;
+      const matchesTier = selectedTier === 'all' || t.tier === selectedTier;
 
-      return matchesSearch && matchesCategory;
+      return matchesSearch && matchesCategory && matchesTier;
     });
-  }, [sourceTickets, searchQuery, selectedCategory]);
-
-  const formatElapsed = (createdAt: number) => {
-    const elapsedMinutes = Math.floor((Date.now() - createdAt) / (1000 * 60));
-    if (elapsedMinutes < 1) return 'Agora mesmo';
-    if (elapsedMinutes < 60) return `Há ${elapsedMinutes}m`;
-    const hours = Math.floor(elapsedMinutes / 60);
-    return `Há ${hours}h ${elapsedMinutes % 60}m`;
-  };
+  }, [sourceTickets, searchQuery, selectedCategory, selectedTier]);
 
   return (
     <div className="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-5 backdrop-blur-xl shadow-xl flex flex-col h-full">
@@ -94,16 +92,16 @@ export const TicketQueueView: React.FC<TicketQueueViewProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
-                Fila de Chamados
+                Fila de Triagem de Incidentes
                 <span className="text-xs px-2.5 py-0.5 rounded-full font-mono bg-slate-800 text-slate-300 border border-slate-700">
                   {filteredTickets.length} de {sourceTickets.length}
                 </span>
               </h2>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-400 mt-0.5 font-mono">
               {viewMode === 'priority'
-                ? 'Ordenação por Nível de SLA/Urgência (Priority Queue + FIFO)'
-                : 'Ordenação estrita por tempo de chegada (Pure FIFO Queue)'}
+                ? 'Heap/Fila Prioritária SLA • O(1) Triagem de Urgência'
+                : 'Fila Duplamente Encadeada • FIFO O(1) por timestamp'}
             </p>
           </div>
 
@@ -134,17 +132,17 @@ export const TicketQueueView: React.FC<TicketQueueViewProps> = ({
           </div>
         </div>
 
-        {/* Search & Category Filter Bar */}
+        {/* Search & Filter Bar */}
         <div className="flex flex-col sm:flex-row items-center gap-2 pt-1">
           <div className="relative flex-1 w-full">
             <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              aria-label="Buscar chamado, solicitante ou setor"
+              aria-label="Buscar incidente, solicitante, tag ou setor"
               maxLength={100}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar chamado, solicitante ou setor..."
+              placeholder="Buscar incidente, solicitante, tag ou setor..."
               className="w-full text-xs bg-slate-950/90 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-slate-700"
             />
           </div>
@@ -160,7 +158,7 @@ export const TicketQueueView: React.FC<TicketQueueViewProps> = ({
             >
               Todas
             </button>
-            {(['security', 'network', 'software', 'access', 'hardware'] as TicketCategory[]).map((cat) => (
+            {(['security', 'network', 'software', 'access', 'infrastructure', 'hardware'] as TicketCategory[]).map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
@@ -184,9 +182,9 @@ export const TicketQueueView: React.FC<TicketQueueViewProps> = ({
             <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-3">
               <Sparkles className="w-6 h-6" />
             </div>
-            <h3 className="text-sm font-semibold text-white">Nenhum chamado encontrado</h3>
+            <h3 className="text-sm font-semibold text-white">Nenhum incidente na fila</h3>
             <p className="text-xs text-slate-400 max-w-xs mt-1">
-              {searchQuery ? 'Tente ajustar os termos da busca.' : 'A fila de atendimento está zerada!'}
+              {searchQuery ? 'Tente ajustar os termos da busca.' : 'A fila de atendimento está limpa e operando em 100% de conformidade!'}
             </p>
           </div>
         ) : (
@@ -207,23 +205,27 @@ export const TicketQueueView: React.FC<TicketQueueViewProps> = ({
                 onClick={() => onSelectTicket(ticket)}
                 className={`group relative rounded-2xl border transition-all duration-200 p-4 cursor-pointer ${
                   isHead
-                    ? 'bg-slate-900/90 border-emerald-500/40 shadow-lg shadow-emerald-950/20 ring-1 ring-emerald-500/20'
+                    ? 'bg-slate-900/95 border-emerald-500/40 shadow-lg shadow-emerald-950/20 ring-1 ring-emerald-500/20'
                     : 'bg-slate-950/60 border-slate-800/80 hover:border-slate-700 hover:bg-slate-900/60 shadow-sm'
                 }`}
               >
                 {/* Top info */}
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-lg ${
                       isHead
                         ? 'bg-emerald-500 text-slate-950 font-extrabold shadow-sm'
                         : 'bg-slate-800/80 text-slate-400 border border-slate-700/60'
                     }`}>
-                      {isHead ? '★ PRÓXIMO DA FILA' : `#${index + 1}`}
+                      {isHead ? '★ HEAD DA FILA' : `#${index + 1}`}
                     </span>
 
-                    <span className="text-xs font-mono font-semibold text-slate-300">
+                    <span className="text-xs font-mono font-bold text-slate-300 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
                       {ticket.id}
+                    </span>
+
+                    <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">
+                      {ticket.tier || 'N1 - Suporte'}
                     </span>
 
                     {ticket.requester.isVip && (
@@ -234,8 +236,8 @@ export const TicketQueueView: React.FC<TicketQueueViewProps> = ({
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${priorityConfig.color}`}>
-                      {priorityConfig.label}
+                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${priorityConfig.color}`}>
+                      {priorityConfig.code} • {priorityConfig.label.split('•')[1] || priorityConfig.label}
                     </span>
                   </div>
                 </div>
@@ -250,23 +252,27 @@ export const TicketQueueView: React.FC<TicketQueueViewProps> = ({
                   </p>
                 </div>
 
-                {/* Requester & SLA footer */}
+                {/* Requester, Location & SLA footer */}
                 <div className="mt-3 pt-2.5 border-t border-slate-800/60 flex items-center justify-between gap-2 text-xs">
                   <div className="flex items-center gap-2 text-slate-400 truncate">
-                    <div className="flex items-center gap-1 truncate">
+                    <div className="flex items-center gap-1.5 truncate">
                       <User className="w-3 h-3 text-slate-500 shrink-0" />
                       <span className="text-slate-300 truncate">{ticket.requester.name}</span>
-                      <span className="text-slate-500 text-[11px] truncate">({ticket.requester.department})</span>
+                      <span className="text-slate-500 text-[11px] truncate font-mono">({ticket.requester.department})</span>
                     </div>
                   </div>
 
                   {/* SLA Countdown pill */}
                   <div className="flex items-center gap-1.5 shrink-0">
                     <Clock className="w-3 h-3 text-slate-500" />
-                    <span className={`text-[11px] font-mono font-bold ${
-                      isSlaBreached ? 'text-rose-400' : isSlaWarning ? 'text-amber-400' : 'text-emerald-400'
+                    <span className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-md ${
+                      isSlaBreached 
+                        ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 animate-pulse' 
+                        : isSlaWarning 
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' 
+                        : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30'
                     }`}>
-                      {remainingMinutes}m SLA
+                      {remainingMinutes}m SLA Restante
                     </span>
                   </div>
                 </div>
@@ -277,16 +283,16 @@ export const TicketQueueView: React.FC<TicketQueueViewProps> = ({
                     {ticket.priority !== 'critical' && (
                       <button
                         onClick={() => onChangePriority(ticket.id, 'critical')}
-                        title="Escalar para Crítico"
+                        title="Escalar para P1 Crítico"
                         className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-rose-300 hover:text-white bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg transition-colors"
                       >
                         <ArrowUpCircle className="w-3 h-3" />
-                        Escalar
+                        Escalar P1
                       </button>
                     )}
                     <button
                       onClick={() => onCancelTicket(ticket.id)}
-                      title="Excluir/Cancelar chamado"
+                      title="Excluir/Cancelar incidente com snapshot de rollback"
                       className="p-1 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -301,7 +307,7 @@ export const TicketQueueView: React.FC<TicketQueueViewProps> = ({
                         : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
                     }`}
                   >
-                    <span>Atender</span>
+                    <span>Atender Nó</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -315,3 +321,4 @@ export const TicketQueueView: React.FC<TicketQueueViewProps> = ({
     </div>
   );
 };
+

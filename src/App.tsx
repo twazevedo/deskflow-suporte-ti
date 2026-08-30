@@ -42,6 +42,7 @@ export const App: React.FC = () => {
   const [redoCount, setRedoCount] = useState(0);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [isAutoStreamActive, setIsAutoStreamActive] = useState(false);
 
   // Ticker de 1 segundo para atualização de relógios de SLA em tempo real
   const [, setClockTicker] = useState(0);
@@ -51,6 +52,73 @@ export const App: React.FC = () => {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Live Incident Streaming (NOC Auto-Feed Simulation)
+  useEffect(() => {
+    if (!isAutoStreamActive) return;
+
+    const streamInterval = setInterval(() => {
+      const randomTemplate = TICKET_TEMPLATES[Math.floor(Math.random() * TICKET_TEMPLATES.length)];
+      const id = `INC-${Date.now().toString().slice(-4)}`;
+      const streamTicket: Ticket = {
+        ...randomTemplate,
+        id,
+        status: 'queued',
+        createdAt: Date.now(),
+        auditHistory: [
+          { timestamp: Date.now(), actor: 'NOC Auto-Sensor', action: 'STREAM_EVENT_INGESTED', details: 'Telemetria capturada via webhook corporativo' }
+        ]
+      };
+
+      queueRef.current.enqueue(streamTicket);
+      priorityQueueRef.current.enqueue(streamTicket, streamTicket.priorityLevel);
+      syncDataStructures();
+      soundManager.playPush();
+
+      addToast({
+        type: 'info',
+        title: `⚡ NOC Feed: ${streamTicket.id}`,
+        description: `Incidente ${streamTicket.priority.toUpperCase()} "${streamTicket.title.substring(0, 35)}..." enfileirado automaticamente.`,
+        dataStructureInfo: 'Queue.enqueue() -> O(1) Streaming Enqueue',
+      });
+    }, 10000);
+
+    return () => clearInterval(streamInterval);
+  }, [isAutoStreamActive]);
+
+  // Exportar Relatório Corporativo em CSV
+  const handleExportReport = () => {
+    const allItems = [
+      ...resolvedTickets.map(t => ({ ...t, stage: 'RESOLVIDO' })),
+      ...Object.values(activeTicketsMap).map(t => ({ ...t, stage: 'EM_ATENDIMENTO' })),
+      ...queueTickets.map(t => ({ ...t, stage: 'NA_FILA_O1' })),
+    ];
+
+    const csvHeader = 'ID,Titulo,Prioridade,Impacto,Tier,Status,Solicitante,Setor,SLA_Minutos,Resolucao_RCA,Data_Criacao\n';
+    const csvRows = allItems.map(t => {
+      const title = `"${(t.title || '').replace(/"/g, '""')}"`;
+      const requester = `"${(t.requester?.name || '').replace(/"/g, '""')}"`;
+      const dept = `"${(t.requester?.department || '').replace(/"/g, '""')}"`;
+      const rca = `"${(t.resolutionNotes || 'Pendente').replace(/"/g, '""')}"`;
+      const date = new Date(t.createdAt).toISOString();
+      return `${t.id},${title},${t.priority},${t.impact || 'department'},${t.tier || 'N1'},${t.status},${requester},${dept},${t.slaMinutes},${rca},${date}`;
+    }).join('\n');
+
+    const blob = new Blob([csvHeader + csvRows], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `relatorio_incidentes_deskflow_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    addToast({
+      type: 'success',
+      title: 'Relatório CSV Exportado',
+      description: 'Download do histórico de incidentes e auditoria concluído com sucesso.',
+    });
+  };
 
   // Sincronizador de snapshots das estruturas de dados para o React
   const syncDataStructures = useCallback(() => {
@@ -256,7 +324,12 @@ export const App: React.FC = () => {
   };
 
   // 4. Concluir e Resolver Chamado
-  const handleResolveTicket = (agentId: string, ticketId: string, notes: string) => {
+  const handleResolveTicket = (
+    agentId: string, 
+    ticketId: string, 
+    notes: string, 
+    resolutionCategory: import('./types/ticket').ResolutionCategory = 'patch_applied'
+  ) => {
     const agent = agents.find((a) => a.id === agentId);
     const ticket = activeTicketsMap[ticketId];
     if (!agent || !ticket) return;
@@ -266,6 +339,7 @@ export const App: React.FC = () => {
       status: 'resolved',
       resolvedAt: Date.now(),
       resolutionNotes: notes,
+      resolutionCategory,
     };
 
     setAgents((prev) =>
@@ -771,6 +845,9 @@ export const App: React.FC = () => {
         onOpenRecruiterModal={() => setIsRecruiterModalOpen(true)}
         onInjectSimulatedTickets={handleInjectSimulatedTickets}
         onResetDemo={handleResetDemo}
+        onExportReport={handleExportReport}
+        isAutoStreamActive={isAutoStreamActive}
+        onToggleAutoStream={() => setIsAutoStreamActive((prev) => !prev)}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         soundEnabled={soundEnabled}

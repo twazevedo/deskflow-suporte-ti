@@ -10,7 +10,12 @@ import {
   Zap, 
   Volume2, 
   VolumeX, 
-  Briefcase
+  Briefcase,
+  ShieldCheck,
+  Download,
+  Play,
+  Pause,
+  Activity
 } from 'lucide-react';
 import { soundManager } from '../utils/sound';
 
@@ -24,6 +29,9 @@ interface HeaderProps {
   onOpenRecruiterModal: () => void;
   onInjectSimulatedTickets: () => void;
   onResetDemo: () => void;
+  onExportReport: () => void;
+  isAutoStreamActive: boolean;
+  onToggleAutoStream: () => void;
   activeTab: 'board' | 'lab';
   setActiveTab: (tab: 'board' | 'lab') => void;
   soundEnabled: boolean;
@@ -40,6 +48,9 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenRecruiterModal,
   onInjectSimulatedTickets,
   onResetDemo,
+  onExportReport,
+  isAutoStreamActive,
+  onToggleAutoStream,
   activeTab,
   setActiveTab,
   soundEnabled,
@@ -52,8 +63,8 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-slate-950/85 backdrop-blur-2xl border-b border-slate-800/80 px-4 lg:px-8 py-3">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+    <header className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur-2xl border-b border-slate-800/80 px-4 lg:px-8 py-2.5">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
         
         {/* Brand & Project Identity */}
         <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
@@ -66,15 +77,20 @@ export const Header: React.FC<HeaderProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="font-bold text-base text-white tracking-tight flex items-center gap-2">
-                  DeskFlow
+                  DeskFlow Enterprise
                   <span className="text-[10px] px-2 py-0.5 rounded-full font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                    O(1) Data Structures
+                    ITIL v4 • O(1) Engine
                   </span>
                 </h1>
               </div>
-              <p className="text-[11px] text-slate-400">
-                Fila de Atendimento (Queue) + Desfazer Ações (Stack)
-              </p>
+              <div className="flex items-center gap-2 text-[11px] text-slate-400">
+                <span className="flex items-center gap-1 text-emerald-400/90 font-mono">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  SOC Guard Operacional
+                </span>
+                <span>•</span>
+                <span>Fila O(1) + Command Pattern Stack</span>
+              </div>
             </div>
           </div>
 
@@ -110,7 +126,7 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             <Zap className="w-3.5 h-3.5" />
-            Mesa de Atendimento
+            Mesa de Incidentes
           </button>
           <button
             onClick={() => setActiveTab('lab')}
@@ -125,9 +141,33 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         </div>
 
-        {/* Actions bar: Recruiter Guide, Undo/Redo, Add Ticket, Simulation */}
+        {/* Actions bar: Auto-Stream, Recruiter Guide, Undo/Redo, Export, Add Incident */}
         <div className="flex items-center gap-2 w-full md:w-auto justify-end flex-wrap sm:flex-nowrap">
           
+          {/* Live Incident Stream Toggle */}
+          <button
+            onClick={onToggleAutoStream}
+            title="Simular Tráfego Contínuo de Incidentes Corporativos (Streaming NOC)"
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-2xl border transition-all ${
+              isAutoStreamActive
+                ? 'bg-rose-500/20 text-rose-300 border-rose-500/50 shadow-lg shadow-rose-950/40 animate-pulse'
+                : 'bg-slate-900/80 text-slate-300 hover:text-white border-slate-800 hover:bg-slate-800'
+            }`}
+          >
+            {isAutoStreamActive ? <Pause className="w-3.5 h-3.5 text-rose-400" /> : <Play className="w-3.5 h-3.5 text-emerald-400" />}
+            <span className="hidden lg:inline">{isAutoStreamActive ? 'Pausar NOC Feed' : 'Live Feed NOC'}</span>
+          </button>
+
+          {/* Export Incident Report */}
+          <button
+            onClick={onExportReport}
+            title="Exportar Relatório Corporativo de Incidentes e Auditoria em CSV"
+            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-900/80 hover:bg-slate-800 border border-slate-800 rounded-2xl transition-colors"
+          >
+            <Download className="w-3.5 h-3.5 text-sky-400" />
+            <span className="hidden xl:inline">Exportar CSV</span>
+          </button>
+
           {/* Recruiter Pitch Button */}
           <button
             onClick={onOpenRecruiterModal}
@@ -188,16 +228,16 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-300 bg-slate-900/80 hover:bg-slate-800 border border-slate-800 rounded-2xl transition-all active:scale-95"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden lg:inline">Simular</span>
+            <span className="hidden lg:inline">+ Carga</span>
           </button>
 
-          {/* New Ticket */}
+          {/* New Incident */}
           <button
             onClick={onOpenNewTicketModal}
             className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-950 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 rounded-2xl shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
           >
             <Plus className="w-4 h-4" />
-            <span>Novo Chamado</span>
+            <span>Novo Incidente</span>
           </button>
 
           {/* Reset Demo */}
@@ -214,3 +254,4 @@ export const Header: React.FC<HeaderProps> = ({
     </header>
   );
 };
+

@@ -36,10 +36,13 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
   const [requesterName, setRequesterName] = useState('Mariana Silva');
   const [requesterEmail, setRequesterEmail] = useState('mariana.s@empresa.com.br');
   const [department, setDepartment] = useState('Financeiro');
+  const [location, setLocation] = useState('Sede SP - 8º Andar');
   const [isVip, setIsVip] = useState(false);
   const [priority, setPriority] = useState<TicketPriority>('high');
   const [category, setCategory] = useState<TicketCategory>('software');
-  const [tagsInput, setTagsInput] = useState('ERP, Acesso');
+  const [impact, setImpact] = useState<'enterprise' | 'department' | 'individual'>('department');
+  const [tier, setTier] = useState<'N1 - Suporte Ágil' | 'N2 - Sistemas & Cloud' | 'N3 - Infra & SecOps'>('N1 - Suporte Ágil');
+  const [tagsInput, setTagsInput] = useState('ERP, Faturamento');
 
   if (!isOpen) return null;
 
@@ -49,9 +52,12 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
     setRequesterName(template.requester.name);
     setRequesterEmail(template.requester.email);
     setDepartment(template.requester.department);
+    setLocation(template.requester.location || 'Sede Principal');
     setIsVip(template.priority === 'critical');
     setPriority(template.priority);
     setCategory(template.category);
+    setImpact(template.impact || 'department');
+    setTier(template.tier || 'N1 - Suporte Ágil');
     setTagsInput(template.tags.join(', '));
   };
 
@@ -73,13 +79,19 @@ export const NewTicketModal: React.FC<NewTicketModalProps> = ({
         name: requesterName.trim().substring(0, 60) || 'Solicitante Anônimo',
         email: requesterEmail.trim().substring(0, 80) || 'usuario@empresa.com.br',
         department: department.trim().substring(0, 50) || 'Geral',
+        location: location.trim().substring(0, 50) || 'Sede Principal',
         isVip,
       },
       priority,
       priorityLevel: PRIORITY_MAP[priority].level,
       category,
+      impact,
+      tier,
       slaMinutes: PRIORITY_MAP[priority].sla,
-      tags: tags.length > 0 ? tags : ['Geral'],
+      tags: tags.length > 0 ? tags : ['ITSM'],
+      auditHistory: [
+        { timestamp: Date.now(), actor: requesterName, action: 'INCIDENT_CREATED', details: 'Abertura manual via Portal Service Desk' }
+      ]
     });
 
     onClose();
