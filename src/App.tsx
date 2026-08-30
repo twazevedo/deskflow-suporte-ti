@@ -17,6 +17,7 @@ import { InteractiveLab } from './components/InteractiveLab';
 import { NewTicketModal } from './components/NewTicketModal';
 import { TicketDetailModal } from './components/TicketDetailModal';
 import { RecruiterGuideModal } from './components/RecruiterGuideModal';
+import { AICopilotChat } from './components/AICopilotChat';
 import { ToastContainer, ToastMessage } from './components/Toast';
 
 export const App: React.FC = () => {
@@ -933,10 +934,18 @@ export const App: React.FC = () => {
         onSubmit={handleCreateTicket}
       />
 
-      {/* Modal do Guia do Recrutador e Arquitetura */}
+      {/* Modal de Documentação de Arquitetura */}
       <RecruiterGuideModal
         isOpen={isRecruiterModalOpen}
         onClose={() => setIsRecruiterModalOpen(false)}
+      />
+
+      {/* Autoatendimento Inteligente com IA Corporativa */}
+      <AICopilotChat
+        onAutoCreateTicket={handleCreateTicket}
+        queueTickets={queueTickets}
+        priorityQueueTickets={priorityQueueTickets}
+        resolvedTickets={resolvedTickets}
       />
 
       {/* Notificações Flutuantes (Toasts) */}
