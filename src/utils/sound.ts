@@ -1,7 +1,7 @@
 // Web Audio API Micro-synthesizer for professional tactile sound feedback
 class SoundEffects {
   private ctx: AudioContext | null = null;
-  public enabled: boolean = true;
+  public enabled: boolean = false;
 
   private initContext() {
     try {

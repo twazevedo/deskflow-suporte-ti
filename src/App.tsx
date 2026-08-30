@@ -43,7 +43,7 @@ export const App: React.FC = () => {
   const [undoCount, setUndoCount] = useState(0);
   const [redoCount, setRedoCount] = useState(0);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(false);
   const [isAutoStreamActive, setIsAutoStreamActive] = useState(false);
 
   // Ticker de 1 segundo para atualização de relógios de SLA em tempo real
@@ -130,13 +130,14 @@ export const App: React.FC = () => {
     setRedoCount(historyRef.current.redoCount());
   }, []);
 
-  // Notificações Toast
+  // Notificações Toast Otimizadas (Subtis, Compactas e Rápidas)
   const addToast = (toast: Omit<ToastMessage, 'id'>) => {
     const id = `toast-${Date.now()}-${Math.random()}`;
-    setToasts((prev) => [...prev, { ...toast, id }]);
+    // Mantém no máximo 1 notificação ativa por vez para não poluir a tela
+    setToasts([{ ...toast, id }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
+    }, 2200);
   };
 
   const removeToast = (id: string) => {
